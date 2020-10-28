@@ -84,16 +84,55 @@ func getAllMigDevices() []*nvml.Device {
 	return migs
 }
 
+// getAllNonMigDevices() across all full GPUs
+func getAllNonMigDevices() []*string {
+	n, err := nvml.GetDeviceCount()
+	check(err)
+
+	var names []*string
+	for i := uint(0); i < n; i++ {
+		d, err := nvml.NewDeviceLite(i)
+		check(err)
+
+        migEnabled, err := d.IsMigEnabled()
+		check(err)
+
+		gpuname, err := d.GetDeviceName()
+		check(err)
+
+		if migEnabled {
+			continue
+		}
+        names = append(names,gpuname)
+	}
+
+	return names
+}
+
 // migStrategyNone
 func (s *migStrategyNone) GetPlugins() []*NvidiaDevicePlugin {
-	return []*NvidiaDevicePlugin{
-		NewNvidiaDevicePlugin(
-			"nvidia.com/gpu",
-			NewGpuDeviceManager(false), // Enumerate device even if MIG enabled
-			"NVIDIA_VISIBLE_DEVICES",
-			gpuallocator.NewBestEffortPolicy(),
-			pluginapi.DevicePluginPath+"nvidia-gpu.sock"),
+	gpus := getAllNonMigDevices()
+	if *(gpus[0]) == "V100"{
+		return []*NvidiaDevicePlugin{
+			NewNvidiaDevicePlugin(
+				"nvidia.com/v100",
+				NewGpuDeviceManager(false), // Enumerate device even if MIG enabled
+				"NVIDIA_VISIBLE_DEVICES",
+				gpuallocator.NewBestEffortPolicy(),
+				pluginapi.DevicePluginPath+"nvidia-gpu.sock"),
+		}
+	}else {
+		return []*NvidiaDevicePlugin{
+			NewNvidiaDevicePlugin(
+				"nvidia.com/gpu",
+				NewGpuDeviceManager(false), // Enumerate device even if MIG enabled
+				"NVIDIA_VISIBLE_DEVICES",
+				gpuallocator.NewBestEffortPolicy(),
+				pluginapi.DevicePluginPath+"nvidia-gpu.sock"),
+		}
 	}
+	
+	
 }
 
 func (s *migStrategyNone) MatchesResource(mig *nvml.Device, resource string) bool {

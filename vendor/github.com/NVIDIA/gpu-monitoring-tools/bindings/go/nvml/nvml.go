@@ -638,6 +638,14 @@ func (d *Device) GetGraphicsRunningProcesses() ([]uint, []uint64, error) {
 func (d *Device) GetAllRunningProcesses() ([]ProcessInfo, error) {
 	return d.handle.deviceGetAllRunningProcesses()
 }
+//get devie name
+func (d *Device) GetDeviceName() (*string, error) {
+	
+	devicename, err := d.deviceGetName()
+	assert(err)
+
+	return devicename, err
+}
 
 func (d *Device) GetDeviceMode() (mode *DeviceMode, err error) {
 	defer func() {
