@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"log"
+	//"strings"
 
 	"github.com/NVIDIA/go-gpuallocator/gpuallocator"
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
@@ -112,7 +113,11 @@ func getAllNonMigDevices() []*string {
 // migStrategyNone
 func (s *migStrategyNone) GetPlugins() []*NvidiaDevicePlugin {
 	gpus := getAllNonMigDevices()
-	if *(gpus[0]) == "V100"{
+	fmt.Printf("test111111111", *(gpus[0]))
+	//IsV100, err := fmt.Println(strings.Contains(*(gpus[0]), "V100"))
+	//check(err)
+	//fmt.Printf("test22222", IsV100)
+	if  *(gpus[0])=="Tesla V100-PCIE-32GB" {
 		return []*NvidiaDevicePlugin{
 			NewNvidiaDevicePlugin(
 				"nvidia.com/v100",
